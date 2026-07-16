@@ -1,0 +1,25 @@
+{
+  "name": "bank-of-dad",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-07-01",
+
+  // Static site (landing at /, app at /app). The Worker owns /api/* first.
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "./public",
+    "run_worker_first": ["/api/*"]
+  },
+
+  // D1 database — paste the id printed by `wrangler d1 create bank-of-dad`
+  "d1_databases": [
+    { "binding": "DB", "database_name": "bank-of-dad", "database_id": "eb40317f-fbf9-4796-bffe-bc60ef25dffc" }
+  ],
+
+  // Public config. APP_URL must match your deployed URL exactly.
+  "vars": {
+    "APP_URL": "https://bank-of-dada.ashish161.workers.dev",
+    "RESEND_FROM": "Bank of Dad <onboarding@resend.dev>"
+  }
+
+  // Secret (NOT here — set with wrangler): RESEND_API_KEY
+}

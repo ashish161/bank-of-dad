@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bank of Dad — the napkin math</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FBF6EA; --sheet: #FFFDF7; --grid: rgba(64,104,158,.11);
+    --ink: #1C2733; --ink-soft: #47566A; --faint: #5C6675;
+    --pencil: #7E97C4; --pencil-fill: rgba(126,151,196,.42);
+    --marker: #F4C13E; --marker-fill: rgba(244,193,62,.55);
+    --pen: #E23B41; --hi: #FFE58A;
+    --maxw: 820px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Instrument Sans', system-ui, sans-serif;
+    color: var(--ink); line-height: 1.55; -webkit-font-smoothing: antialiased;
+    background: var(--paper);
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 26px 26px;
+  }
+  a { color: inherit; text-decoration: none; }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 22px; }
+
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 22px 0; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; }
+  .logo { width: 34px; height: 34px; border-radius: 9px; background: var(--ink); color: var(--paper); display: grid; place-items: center; font-weight: 700; font-size: 17px; transform: rotate(-3deg); }
+  .nav-cta { font-weight: 600; font-size: 14px; color: var(--ink); border: 2px solid var(--ink); border-radius: 10px; padding: 8px 15px; transition: background .15s, color .15s; }
+  .nav-cta:hover { background: var(--ink); color: var(--paper); }
+
+  .hero { padding: 30px 0 6px; }
+  .scrawl { font-family: 'Caveat', cursive; font-size: 26px; font-weight: 600; color: var(--pen); transform: rotate(-2deg); display: inline-block; margin-bottom: 6px; }
+  h1 { font-weight: 700; font-size: clamp(32px, 5.6vw, 52px); line-height: 1.08; letter-spacing: -.02em; max-width: 18ch; }
+  h1 .hi { background: linear-gradient(180deg, transparent 58%, var(--hi) 58%, var(--hi) 92%, transparent 92%); padding: 0 2px; }
+  .lede { font-size: 18px; color: var(--ink-soft); max-width: 52ch; margin-top: 16px; }
+
+  /* the graph-paper sheet with the sketch */
+  .sheet { position: relative; margin: 26px 0 0; background: var(--sheet);
+    background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 26px 26px;
+    border: 2px solid var(--ink); border-radius: 14px; padding: 18px;
+    box-shadow: 6px 7px 0 rgba(28,39,51,.14); }
+  .sheet-title { font-family: 'Caveat', cursive; font-size: 22px; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
+  .chart-holder { position: relative; }
+  canvas { width: 100%; height: 260px; display: block; }
+
+  .lbl { position: absolute; font-family: 'Caveat', cursive; font-weight: 700; pointer-events: none; line-height: 1; }
+  .lbl-paid { color: #35538F; font-size: 19px; text-align: center; transform: translate(-50%,-50%) rotate(-3deg); transition: left .12s, top .12s; }
+  .lbl-earned { color: #A9781C; font-size: 20px; text-align: center; transform: translate(-50%,-50%) rotate(-4deg); transition: left .12s, top .12s; }
+  .lbl-cross { color: var(--pen); font-size: 19px; transform: translateX(-50%) rotate(-3deg); transition: left .12s ease, opacity .12s; text-align: center; white-space: nowrap; }
+
+  .controls { display: flex; align-items: center; gap: 14px; margin-top: 14px; }
+  .controls label { font-family: 'Caveat', cursive; font-size: 20px; font-weight: 700; color: var(--ink); white-space: nowrap; }
+  .controls output { font-family: 'Caveat', cursive; font-size: 24px; font-weight: 700; color: var(--pen); min-width: 1.4em; text-align: center; }
+  input[type=range] { -webkit-appearance: none; appearance: none; flex: 1; height: 3px; background: var(--ink); border-radius: 9px; outline: none; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 26px; height: 26px; border-radius: 50%; background: var(--paper); border: 3px solid var(--ink); cursor: pointer; box-shadow: 2px 2px 0 rgba(28,39,51,.2); }
+  input[type=range]::-moz-range-thumb { width: 24px; height: 24px; border-radius: 50%; background: var(--paper); border: 3px solid var(--ink); cursor: pointer; }
+
+  .takeaway { font-size: 17px; color: var(--ink); font-weight: 500; margin-top: 16px; padding: 14px 16px; background: #FFF; border: 2px dashed var(--ink); border-radius: 12px; }
+  .takeaway b { color: var(--pen); }
+  .takeaway .none { color: var(--ink-soft); }
+
+  .cta-wrap { margin: 30px 0 6px; }
+  .cta { display: inline-flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; color: var(--paper); background: var(--ink); border: 2px solid var(--ink); border-radius: 12px; padding: 15px 26px; cursor: pointer; box-shadow: 5px 5px 0 var(--marker); transition: transform .12s, box-shadow .12s; }
+  .cta:hover { transform: translate(-2px,-2px); box-shadow: 7px 7px 0 var(--marker); }
+  .cta-note { display: block; margin-top: 12px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--faint); }
+
+  .beats { display: grid; grid-template-columns: repeat(3,1fr); gap: 22px; margin: 46px 0 20px; }
+  .beat h3 { font-family: 'Caveat', cursive; font-size: 24px; font-weight: 700; margin-bottom: 2px; }
+  .beat p { font-size: 15px; color: var(--ink-soft); }
+
+  footer { padding: 26px 0 44px; color: var(--faint); font-size: 13px; border-top: 2px solid var(--grid); margin-top: 20px; }
+  footer b { color: var(--ink-soft); }
+  @media (max-width: 620px){ .beats{ grid-template-columns:1fr; gap:14px; } canvas{ height:230px; } }
+  @media (prefers-reduced-motion: reduce){ *,*::before,*::after{ transition:none !important; animation:none !important; } }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <nav>
+      <div class="brand"><span class="logo">₹</span> Bank of Dad</div>
+      <a class="nav-cta" href="/app?demo=1">Open the app</a>
+    </nav>
+
+    <header class="hero">
+      <span class="scrawl">the back-of-the-napkin version ↓</span>
+      <h1>Show a kid how saved money starts <span class="hi">making its own money</span>.</h1>
+      <p class="lede">A weekly allowance at a 10% practice rate. Slide their age and find the moment the interest quietly starts out-earning what you put in.</p>
+    </header>
+
+    <section class="sheet">
+      <div class="sheet-title">₹500 a week, growing at 10% a year →</div>
+      <div class="chart-holder">
+        <canvas id="chart" aria-hidden="true"></canvas>
+        <span class="lbl lbl-paid" id="lblPaid">what you<br>put in</span>
+        <span class="lbl lbl-earned" id="lblEarned">what the money<br>earns on its own</span>
+        <span class="lbl lbl-cross" id="crossLbl" style="opacity:0; top:2px;">the day it flips! ↓</span>
+      </div>
+      <div class="controls">
+        <label for="age">Start age</label>
+        <input type="range" id="age" min="2" max="15" value="5" step="1" aria-label="Child's starting age">
+        <output id="ageOut">5</output>
+      </div>
+      <div class="takeaway" id="takeaway" role="status" aria-live="polite"></div>
+    </section>
+
+    <div class="cta-wrap">
+      <a class="cta" href="/app?demo=1">Try it — no signup <span aria-hidden="true">→</span></a>
+      <span class="cta-note">Opens instantly with a demo child · nothing to install</span>
+    </div>
+
+    <section class="beats">
+      <div class="beat"><h3>They watch it grow</h3><p>A jar of coins fills as the money earns — compounding they can actually see.</p></div>
+      <div class="beat"><h3>The day it flips</h3><p>One week, the interest out-earns the allowance. That flip is the whole lesson.</p></div>
+      <div class="beat"><h3>You run the bank</h3><p>No real money moves. You're the teacher, not a custodian.</p></div>
+    </section>
+
+    <footer><b>Bank of Dad</b> — a teaching tool, not a financial product. Made in India 🇮🇳</footer>
+  </div>
+
+<script>
+  const cv = document.getElementById('chart');
+  const ageSlider = document.getElementById('age');
+  const ageOut = document.getElementById('ageOut');
+  const takeaway = document.getElementById('takeaway');
+  const crossLbl = document.getElementById('crossLbl');
+  const lblPaid = document.getElementById('lblPaid');
+  const lblEarned = document.getElementById('lblEarned');
+
+  const inrShort = n => n >= 1e7 ? '₹' + (n/1e7).toFixed(1) + 'Cr'
+    : n >= 1e5 ? '₹' + (n/1e5).toFixed(1).replace(/\.0$/,'') + 'L'
+    : n >= 1e3 ? '₹' + Math.round(n/1e3) + 'k' : '₹' + Math.round(n);
+
+  const PMT = 500, R = 0.10 * 7 / 365, HORIZON = 18;
+
+  function compute(startAge) {
+    const years = Math.max(1, HORIZON - startAge);
+    const WK = Math.round(years * 52);
+    const total = [], paid = [];
+    let bal = 0, contributed = 0, crossIdx = -1;
+    for (let i = 0; i <= WK; i++) {
+      total.push(bal); paid.push(contributed);
+      if (crossIdx < 0 && i > 0 && bal * R >= PMT) crossIdx = i;
+      bal += bal * R + PMT; contributed += PMT;
+    }
+    const crossAge = crossIdx >= 0 ? Math.round(startAge + crossIdx / 52) : null;
+    return { total, paid, WK, years, crossIdx, crossAge, finalTotal: total[WK], finalPaid: paid[WK] };
+  }
+
+  let D = compute(+ageSlider.value);
+
+  function updateTakeaway() {
+    if (D.crossAge != null) {
+      takeaway.innerHTML = `Around <b>age ${D.crossAge}</b>, the interest out-earns the ₹500 you add each week. From then on, the money is the bigger saver — ending near <b>${inrShort(D.finalTotal)}</b> at 18.`;
+    } else {
+      takeaway.innerHTML = `<span class="none">Only ${D.years} years to grow — not quite enough to reach the flip. Slide to a younger age and watch it appear.</span>`;
+    }
+  }
+
+  const CSS = getComputedStyle(document.documentElement);
+  function draw() {
+    const dpr = window.devicePixelRatio || 1;
+    const W = cv.clientWidth || 740, H = cv.clientHeight || 260, pad = 3;
+    cv.width = Math.round(W*dpr); cv.height = Math.round(H*dpr);
+    const ctx = cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,W,H);
+    const maxV = D.finalTotal || 1;
+    const X = i => (i / D.WK) * W;
+    const Y = v => (H - pad) - (v / maxV) * (H - pad*2);
+    const fill = (arr, color) => {
+      ctx.beginPath(); ctx.moveTo(0, H);
+      for (let i=0;i<=D.WK;i++) ctx.lineTo(X(i), Y(arr[i]));
+      ctx.lineTo(X(D.WK), H); ctx.closePath(); ctx.fillStyle = color; ctx.fill();
+    };
+    fill(D.total, CSS.getPropertyValue('--marker-fill').trim());   // earned wedge (gold)
+    fill(D.paid, CSS.getPropertyValue('--pencil-fill').trim());    // paid-in (pencil blue)
+    // ink outline of the total (hand-drawn feel: 2 slightly offset strokes)
+    const stroke = (dx,dy,w,col) => { ctx.beginPath(); for (let i=0;i<=D.WK;i++){const x=X(i)+dx,y=Y(D.total[i])+dy; i?ctx.lineTo(x,y):ctx.moveTo(x,y);} ctx.strokeStyle=col; ctx.lineWidth=w; ctx.lineJoin='round'; ctx.stroke(); };
+    stroke(0,0,2.5, CSS.getPropertyValue('--ink').trim());
+    // boundary line (paid-in top) in pencil
+    ctx.beginPath(); for (let i=0;i<=D.WK;i++){const x=X(i),y=Y(D.paid[i]); i?ctx.lineTo(x,y):ctx.moveTo(x,y);} ctx.strokeStyle=CSS.getPropertyValue('--pencil').trim(); ctx.lineWidth=1.5; ctx.stroke();
+    // crossover: hand-circled red-pen ring + move the label
+    if (D.crossIdx >= 0) {
+      const x = X(D.crossIdx), y = Y(D.total[D.crossIdx]);
+      ctx.save(); ctx.strokeStyle = CSS.getPropertyValue('--pen').trim(); ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.ellipse(x, y, 15, 12, .3, 0, Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(x, y, 15, 12, .3, .5, Math.PI*2+.4); ctx.stroke(); // second pass = sketchy
+      ctx.setLineDash([5,5]); ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(x, y-14); ctx.lineTo(x, 22); ctx.stroke();
+      ctx.restore();
+      const leftPct = Math.max(12, Math.min(88, (D.crossIdx/D.WK)*100));
+      crossLbl.style.left = leftPct + '%'; crossLbl.style.opacity = '1';
+    } else { crossLbl.style.opacity = '0'; }
+
+    // place the two hand-labels in the vertical centre of their own band
+    const place = (el, frac, loV, hiV) => {
+      const i = Math.round(frac * D.WK);
+      const px = (X(i) / W) * 100, py = (Y((loV[i] + hiV[i]) / 2) / H) * 100;
+      el.style.left = Math.max(14, Math.min(86, px)) + '%';
+      el.style.top  = Math.max(16, Math.min(82, py)) + '%';
+    };
+    const zero = D.paid.map(() => 0);
+    place(lblPaid, 0.26, zero, D.paid);        // pencil band: 0 → paid
+    place(lblEarned, 0.70, D.paid, D.total);   // gold band: paid → total
+  }
+
+  function render(){ ageOut.value = ageSlider.value; D = compute(+ageSlider.value); updateTakeaway(); draw(); }
+  ageSlider.addEventListener('input', render);
+  window.addEventListener('resize', draw);
+  render();
+</script>
+</body>
+</html>
