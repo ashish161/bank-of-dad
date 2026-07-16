@@ -1,4 +1,4 @@
-# Bank of Dad — backend deploy guide
+# Bank of Dad — backend deploy
 
 Magic-link sign-in + cross-device save, on a **fully free** stack:
 **Cloudflare Workers (free) + D1 (free) + Resend (free)**. No paid plan required.
