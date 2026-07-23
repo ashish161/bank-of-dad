@@ -1,0 +1,49 @@
+ Bank of Dad — a children's allowance-teaching app.
+# The app itself is private (per-family data behind sign-in) and must not be crawled.
+# We opt out of AI-training crawlers: this is a kids' product.
+
+User-agent: *
+Allow: /$
+Allow: /login
+Disallow: /app
+Disallow: /api/
+
+# Content Signals (contentsignals.org) — allow search indexing of the public
+# landing, but no AI training and no AI-input use of this site's content.
+Content-Signal: search=yes, ai-train=no, ai-input=no
+
+# --- AI training / dataset crawlers: opt out entirely ---
+User-agent: GPTBot
+Disallow: /
+
+User-agent: OAI-SearchBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: Claude-Web
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: PerplexityBot
+Disallow: /
+
+# Update the host below to match APP_URL if you move to a custom domain.
+Sitemap: https://bank-of-dad.ashish161.workers.dev/sitemap.xml
+
+
